@@ -32,7 +32,7 @@ export const VideoOverlay: React.FC<VideoOverlayProps> = ({
 }) => {
   const displayTitle = text || title || 'Professional Clinic Design - Built for Your Comfort';
   const displayDescription =
-    description || 'Every space designed for your peace of mind.';
+    description || 'Every space in our Alkapuri, Vadodara clinic is designed for your peace of mind.';
 
   return (
     <div

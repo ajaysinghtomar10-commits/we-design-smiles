@@ -65,7 +65,7 @@ export default function DentalClinicHomePage() {
           totalFrames={300}
           fileExtension="webp"
           overlayTitle="We Design Smiles - Professional Dental Care"
-          overlayDescription="Your journey to perfect smiles starts here. Step inside our tranquil Vadodara clinic."
+          overlayDescription="Your journey to perfect smiles starts here. Step inside our tranquil Alkapuri, Vadodara clinic."
         />
       </section>
 
@@ -79,7 +79,7 @@ export default function DentalClinicHomePage() {
           totalFrames={300}
           fileExtension="webp"
           overlayTitle="See Our Smile Transformations - Before & After Results"
-          overlayDescription="Join hundreds of satisfied patients who achieved their dream smiles with precision esthetics."
+          overlayDescription="Join hundreds of satisfied patients who achieved their dream smiles at our Alkapuri, Vadodara clinic."
         />
       </section>
 
@@ -92,7 +92,7 @@ export default function DentalClinicHomePage() {
           totalFrames={299}
           fileExtension="webp"
           overlayText="Professional Clinic Design - Built for Your Comfort"
-          overlayDescription="Every space designed for your peace of mind. Experience zero-anxiety dental wellness."
+          overlayDescription="Every space in our Alkapuri, Vadodara clinic is designed for your peace of mind."
         />
       </section>
 
@@ -104,13 +104,13 @@ export default function DentalClinicHomePage() {
           {/* Section Header */}
           <div className="max-w-3xl mx-auto text-center mb-16">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest bg-sky-50 text-sky-700 mb-3">
-              About WE DESIGN SMILES
+              About WE DESIGN SMILES &bull; Alkapuri, Vadodara
             </span>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight">
               Where Dentistry Meets Architectural Artistry
             </h2>
             <p className="mt-4 text-lg text-slate-600 leading-relaxed">
-              We founded We Design Smiles with a singular purpose: to replace clinical apprehension with serene, bespoke healthcare. Every treatment suite features soundproof architectural glass, ergonomic memory-foam chairs, and 3D digital smile imaging.
+              We founded We Design Smiles with a singular purpose: to replace clinical apprehension with serene, bespoke healthcare in Alkapuri, Vadodara. Every treatment suite features soundproof architectural glass, ergonomic memory-foam chairs, and 3D digital smile imaging.
             </p>
           </div>
 
