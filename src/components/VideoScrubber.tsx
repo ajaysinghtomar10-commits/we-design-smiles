@@ -37,16 +37,17 @@ export const VideoScrubber: React.FC<VideoScrubberProps> = ({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const stickyRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const progressBarRef = useRef<HTMLDivElement | null>(null);
+  const scrollIndicatorRef = useRef<HTMLDivElement | null>(null);
 
-  // Frame tracking state
-  const [currentFrame, setCurrentFrame] = useState<number>(1);
-  const [scrollProgress, setScrollProgress] = useState<number>(0);
-  const [isIntersecting, setIsIntersecting] = useState<boolean>(false);
+  // Minimal state to avoid triggering unnecessary main-thread React re-renders
   const [firstFrameLoaded, setFirstFrameLoaded] = useState<boolean>(false);
-  const [loadedFrameCount, setLoadedFrameCount] = useState<number>(0);
+  const [isIntersecting, setIsIntersecting] = useState<boolean>(false);
 
-  // In-memory cache for loaded frame images
+  // References for frame & render tracking
+  const currentFrameRef = useRef<number>(1);
   const imageCacheRef = useRef<Map<number, HTMLImageElement>>(new Map());
+  const activeRequestsRef = useRef<Set<number>>(new Set());
   const rafIdRef = useRef<number | null>(null);
 
   /**
@@ -62,7 +63,8 @@ export const VideoScrubber: React.FC<VideoScrubberProps> = ({
   );
 
   /**
-   * Render frame onto the high-resolution canvas with 16:9 coverage
+   * Render frame onto the high-resolution canvas with 16:9 coverage.
+   * If exact frame isn't loaded yet, gracefully falls back to closest loaded frame.
    */
   const drawFrame = useCallback((frameIndex: number) => {
     const canvas = canvasRef.current;
@@ -70,9 +72,28 @@ export const VideoScrubber: React.FC<VideoScrubberProps> = ({
     const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) return;
 
-    const img = imageCacheRef.current.get(frameIndex);
+    const cache = imageCacheRef.current;
+    let img = cache.get(frameIndex);
+
+    // If target frame is still streaming, find closest available frame in cache
+    if (!img || !img.complete || img.naturalWidth === 0) {
+      let closestFrame = -1;
+      let minDiff = Infinity;
+      cache.forEach((cachedImg, cachedIdx) => {
+        if (cachedImg && cachedImg.complete && cachedImg.naturalWidth > 0) {
+          const diff = Math.abs(cachedIdx - frameIndex);
+          if (diff < minDiff) {
+            minDiff = diff;
+            closestFrame = cachedIdx;
+          }
+        }
+      });
+      if (closestFrame !== -1) {
+        img = cache.get(closestFrame);
+      }
+    }
+
     if (img && img.complete && img.naturalWidth > 0) {
-      // Calculate 16:9 object-cover coordinates
       const canvasWidth = canvas.width;
       const canvasHeight = canvas.height;
       const imgRatio = img.naturalWidth / img.naturalHeight;
@@ -96,7 +117,33 @@ export const VideoScrubber: React.FC<VideoScrubberProps> = ({
   }, []);
 
   /**
-   * Intersection Observer for lazy loading: only load and animate when in viewport
+   * Load a single frame into memory on demand without flooding network
+   */
+  const preloadFrame = useCallback(
+    (frameIndex: number) => {
+      if (frameIndex < 1 || frameIndex > totalFrames) return;
+      const cache = imageCacheRef.current;
+      if (cache.has(frameIndex) || activeRequestsRef.current.has(frameIndex)) return;
+
+      activeRequestsRef.current.add(frameIndex);
+      const img = new Image();
+      img.src = getFrameUrl(frameIndex);
+      img.onload = () => {
+        activeRequestsRef.current.delete(frameIndex);
+        cache.set(frameIndex, img);
+        if (currentFrameRef.current === frameIndex) {
+          drawFrame(frameIndex);
+        }
+      };
+      img.onerror = () => {
+        activeRequestsRef.current.delete(frameIndex);
+      };
+    },
+    [totalFrames, getFrameUrl, drawFrame]
+  );
+
+  /**
+   * Intersection Observer: only active when within viewport
    */
   useEffect(() => {
     const target = containerRef.current;
@@ -109,7 +156,7 @@ export const VideoScrubber: React.FC<VideoScrubberProps> = ({
       },
       {
         root: null,
-        rootMargin: '200px 0px',
+        rootMargin: '100px 0px',
         threshold: 0,
       }
     );
@@ -119,64 +166,7 @@ export const VideoScrubber: React.FC<VideoScrubberProps> = ({
   }, []);
 
   /**
-   * Progressive preloading of frames once component intersects viewport
-   */
-  useEffect(() => {
-    if (!isIntersecting) return;
-
-    let isSubscribed = true;
-    const cache = imageCacheRef.current;
-
-    // 1. Immediately load frame 1 for instant hero render
-    if (!cache.has(1)) {
-      const firstImg = new Image();
-      firstImg.src = getFrameUrl(1);
-      firstImg.onload = () => {
-        if (!isSubscribed) return;
-        cache.set(1, firstImg);
-        setFirstFrameLoaded(true);
-        setLoadedFrameCount((prev) => prev + 1);
-        drawFrame(1);
-      };
-    } else {
-      setFirstFrameLoaded(true);
-      drawFrame(1);
-    }
-
-    // 2. Preload remaining frames with high-priority batching
-    const batchPreload = (start: number, end: number, step = 1) => {
-      for (let i = start; i <= end; i += step) {
-        if (cache.has(i)) continue;
-        const img = new Image();
-        img.src = getFrameUrl(i);
-        img.onload = () => {
-          if (!isSubscribed) return;
-          cache.set(i, img);
-          setLoadedFrameCount((prev) => prev + 1);
-        };
-      }
-    };
-
-    // First pass: load keyframes every 4th frame for ultra-fast responsive scrubbing
-    batchPreload(2, totalFrames, 4);
-
-    // Second pass: fill all remaining frames in idle / background
-    const idleId = window.requestIdleCallback
-      ? window.requestIdleCallback(() => batchPreload(2, totalFrames, 1))
-      : setTimeout(() => batchPreload(2, totalFrames, 1), 300);
-
-    return () => {
-      isSubscribed = false;
-      if (typeof idleId === 'number' && window.cancelIdleCallback) {
-        window.cancelIdleCallback(idleId);
-      } else {
-        clearTimeout(idleId as unknown as ReturnType<typeof setTimeout>);
-      }
-    };
-  }, [isIntersecting, getFrameUrl, totalFrames, drawFrame]);
-
-  /**
-   * Responsive Canvas resolution resize listener (1920x1080 default native buffer)
+   * Window resize handler
    */
   useEffect(() => {
     const handleResize = () => {
@@ -184,16 +174,43 @@ export const VideoScrubber: React.FC<VideoScrubberProps> = ({
       if (!canvas) return;
       canvas.width = 1920;
       canvas.height = 1080;
-      drawFrame(currentFrame);
+      drawFrame(currentFrameRef.current);
     };
 
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [drawFrame, currentFrame]);
+  }, [drawFrame]);
+
+  /**
+   * On-demand initial load: only fetch Frame 1 initially for lightning-fast LCP & zero TBT.
+   */
+  useEffect(() => {
+    if (!isIntersecting) return;
+
+    const cache = imageCacheRef.current;
+    if (!cache.has(1)) {
+      const firstImg = new Image();
+      firstImg.src = getFrameUrl(1);
+      firstImg.onload = () => {
+        cache.set(1, firstImg);
+        setFirstFrameLoaded(true);
+        drawFrame(1);
+
+        // Preload immediate small buffer (frames 2-5) for seamless initial scroll
+        for (let i = 2; i <= Math.min(5, totalFrames); i++) {
+          preloadFrame(i);
+        }
+      };
+    } else {
+      setFirstFrameLoaded(true);
+      drawFrame(currentFrameRef.current);
+    }
+  }, [isIntersecting, getFrameUrl, totalFrames, drawFrame, preloadFrame]);
 
   /**
    * Window Scroll listener: smoothly maps container scroll position to frame sequence
+   * Uses sliding window frame loading to eliminate main-thread congestion.
    */
   useEffect(() => {
     if (!isIntersecting) return;
@@ -208,24 +225,44 @@ export const VideoScrubber: React.FC<VideoScrubberProps> = ({
 
       if (totalScrollableDistance <= 0) return;
 
-      // Calculate progress from 0 (at top) to 1 (when scrolled to bottom of track)
-      const currentScrollY = -rect.top;
-      const progress = Math.min(1, Math.max(0, currentScrollY / totalScrollableDistance));
+      const currentScrollOffset = -rect.top;
+      const progress = Math.min(Math.max(currentScrollOffset / totalScrollableDistance, 0), 1);
 
-      setScrollProgress(progress);
+      // Direct DOM updates for progress bar & scroll indicator (prevents React re-renders)
+      if (progressBarRef.current) {
+        progressBarRef.current.style.width = `${(progress * 100).toFixed(1)}%`;
+      }
+      if (scrollIndicatorRef.current) {
+        const isEarly = progress < 0.08;
+        scrollIndicatorRef.current.style.opacity = isEarly
+          ? '1'
+          : `${Math.max(0, 1 - (progress - 0.08) * 8)}`;
+        scrollIndicatorRef.current.style.transform = `translate(-50%, ${isEarly ? 0 : 12}px)`;
+      }
 
-      // Map progress to 1-based frame index
+      // Compute frame index
       const targetFrame = Math.min(
         totalFrames,
         Math.max(1, Math.floor(progress * (totalFrames - 1)) + 1)
       );
 
-      if (targetFrame !== currentFrame) {
-        setCurrentFrame(targetFrame);
+      if (targetFrame !== currentFrameRef.current) {
+        currentFrameRef.current = targetFrame;
+
         if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
         rafIdRef.current = requestAnimationFrame(() => {
           drawFrame(targetFrame);
         });
+
+        // Preload sliding window (next 8 frames, previous 3 frames)
+        const forwardEnd = Math.min(totalFrames, targetFrame + 8);
+        for (let f = targetFrame; f <= forwardEnd; f++) {
+          preloadFrame(f);
+        }
+        const backwardEnd = Math.max(1, targetFrame - 3);
+        for (let b = targetFrame - 1; b >= backwardEnd; b--) {
+          preloadFrame(b);
+        }
       }
     };
 
@@ -236,7 +273,7 @@ export const VideoScrubber: React.FC<VideoScrubberProps> = ({
       window.removeEventListener('scroll', handleScroll);
       if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
     };
-  }, [isIntersecting, totalFrames, currentFrame, drawFrame]);
+  }, [isIntersecting, totalFrames, drawFrame, preloadFrame]);
 
   return (
     <section
@@ -296,11 +333,8 @@ export const VideoScrubber: React.FC<VideoScrubberProps> = ({
 
         {/* Subtle Animated Scroll Indicator / Arrow at bottom */}
         <div
-          className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-1 pointer-events-none transition-all duration-500"
-          style={{
-            opacity: scrollProgress < 0.08 ? 1 : Math.max(0, 1 - (scrollProgress - 0.08) * 8),
-            transform: `translate(-50%, ${scrollProgress < 0.08 ? 0 : 12}px)`,
-          }}
+          ref={scrollIndicatorRef}
+          className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-1 pointer-events-none transition-all duration-300"
           aria-hidden="true"
         >
           <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-widest text-slate-600">
@@ -322,8 +356,9 @@ export const VideoScrubber: React.FC<VideoScrubberProps> = ({
         {/* Subtle progress indicator bar at very bottom edge */}
         <div className="absolute bottom-0 left-0 right-0 h-1 bg-slate-300/30 z-40">
           <div
+            ref={progressBarRef}
             className="h-full bg-cyan-600 transition-all duration-75 ease-out shadow-[0_0_8px_rgba(8,145,178,0.8)]"
-            style={{ width: `${(scrollProgress * 100).toFixed(2)}%` }}
+            style={{ width: '0%' }}
           />
         </div>
       </div>
