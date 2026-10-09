@@ -95,7 +95,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
     } catch (err: unknown) {
       console.error('Booking submission error:', err);
       // Even if network fails in local mock mode, allow simulated success or show friendly message
-      setSubmitError('Unable to send request right now. Please call our clinic directly at (212) 555-0199.');
+      setSubmitError('Unable to send request right now. Please call our clinic directly at +91 98250 12345.');
     } finally {
       setIsSubmitting(false);
     }
@@ -161,7 +161,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
             <input
               type="text"
               id="fullName"
-              placeholder="e.g. John Doe"
+              placeholder="e.g. Rajesh Sharma"
               {...register('fullName', {
                 required: 'Full name is required',
                 minLength: {
@@ -188,7 +188,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
               <input
                 type="email"
                 id="email"
-                placeholder="john@example.com"
+                placeholder="rajesh.sharma@gmail.com"
                 {...register('email', {
                   required: 'Email address is required',
                   pattern: {
@@ -213,7 +213,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
               <input
                 type="tel"
                 id="phone"
-                placeholder="(212) 555-0199"
+                placeholder="e.g. 98250 12345"
                 {...register('phone', {
                   required: 'Phone number is required',
                   validate: (val) => {

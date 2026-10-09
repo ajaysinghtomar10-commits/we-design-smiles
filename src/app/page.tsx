@@ -65,7 +65,7 @@ export default function DentalClinicHomePage() {
           totalFrames={300}
           fileExtension="webp"
           overlayTitle="We Design Smiles - Professional Dental Care"
-          overlayDescription="Your journey to perfect smiles starts here. Step inside our tranquil Manhattan clinic."
+          overlayDescription="Your journey to perfect smiles starts here. Step inside our tranquil Vadodara clinic."
         />
       </section>
 
@@ -120,7 +120,7 @@ export default function DentalClinicHomePage() {
               { stat: '15,000+', label: 'Smiles Reimagined', desc: 'Across 14+ years of care' },
               { stat: '99.6%', label: 'Comfort Rating', desc: 'Certified pain-free protocol' },
               { stat: '100%', label: 'Digital Dentistry', desc: 'No messy silicone impressions' },
-              { stat: '18+', label: 'Aesthetic Awards', desc: 'AACD & ADA Fellowship' },
+              { stat: '18+', label: 'Aesthetic Awards', desc: 'IDA & DCI Recognized Fellowship' },
             ].map((item, idx) => (
               <div
                 key={idx}
@@ -148,24 +148,24 @@ export default function DentalClinicHomePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
-                name: 'Dr. Sophia Sterling, DDS',
+                name: 'Dr. Aarav Patel, BDS, MDS',
                 role: 'Founder & Principal Cosmetic Dentist',
-                bio: 'Harvard School of Dental Medicine graduate and AACD Accredited Fellow specializing in ultra-thin porcelain veneers and full-arch rehabilitation.',
-                tags: ['Smile Design', 'Veneers', 'Harvard Alum'],
+                bio: 'Gold Medalist from Government Dental College (Ahmedabad) and Fellow of the International College of Dentists (FICD), specializing in digital smile makeovers, ultra-thin porcelain veneers, and full-mouth rehabilitation.',
+                tags: ['Smile Design', 'Veneers', 'FICD Fellow'],
                 color: 'from-sky-500 to-cyan-400',
               },
               {
-                name: 'Dr. Julian Vance, DMD, MS',
-                role: 'Director of Orthodontics & Airway',
-                bio: 'Columbia University trained specialist focusing on biomechanical clear aligners, adult bite reconstruction, and non-surgical facial aesthetics.',
-                tags: ['Invisalign VIP', 'Airway Ortho', 'Columbia'],
+                name: 'Dr. Ananya Sharma, BDS, MDS',
+                role: 'Director of Orthodontics & Dentofacial Orthopaedics',
+                bio: 'AIIMS New Delhi alumna with specialized training in biomechanical clear aligners, adult bite reconstruction, and non-extraction facial aesthetics.',
+                tags: ['Invisalign Provider', 'Dentofacial Ortho', 'AIIMS Alumna'],
                 color: 'from-cyan-500 to-teal-400',
               },
               {
-                name: 'Dr. Elena Rostova, DDS',
-                role: 'Surgical Implantologist & Periodontist',
-                bio: 'Global pioneer in computer-guided 3D robotic implants and biomimetic tissue grafting with over 4,000 successful restorations.',
-                tags: ['3D Implants', 'Bone Regeneration', 'Pain-Free'],
+                name: 'Dr. Rajesh Mehta, BDS, MDS',
+                role: 'Chief Surgical Implantologist & Periodontist',
+                bio: 'Manipal College of Dental Sciences alumnus and ICOI Diplomate with over 5,000 successful CBCT-guided robotic implants and biomimetic tissue grafting procedures.',
+                tags: ['3D Implants', 'Bone Regeneration', 'Painless Surgery'],
                 color: 'from-blue-600 to-sky-500',
               },
             ].map((doc, idx) => (
@@ -348,11 +348,12 @@ export default function DentalClinicHomePage() {
                 <span className="text-base font-bold text-white tracking-tight">WE DESIGN SMILES</span>
               </div>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Manhattan&apos;s center for elevated aesthetic dentistry, clear aligners, and biomimetic restorative care.
+                Gujarat&apos;s premier center for elevated aesthetic dentistry, clear aligners, and biomimetic restorative care.
               </p>
               <div className="flex items-center gap-2 text-xs font-semibold text-slate-300">
-                <span className="px-2 py-0.5 rounded-sm bg-slate-800 border border-slate-700">ADA Member</span>
-                <span className="px-2 py-0.5 rounded-sm bg-slate-800 border border-slate-700">AACD Fellow</span>
+                <span className="px-2 py-0.5 rounded-sm bg-slate-800 border border-slate-700">IDA Member</span>
+                <span className="px-2 py-0.5 rounded-sm bg-slate-800 border border-slate-700">DCI Registered</span>
+                <span className="px-2 py-0.5 rounded-sm bg-slate-800 border border-slate-700">ISO 9001</span>
               </div>
             </div>
 
@@ -391,9 +392,9 @@ export default function DentalClinicHomePage() {
               <span className="text-xs font-bold uppercase tracking-wider text-white block mb-4">
                 Concierge Contact
               </span>
-              <p className="text-xs text-slate-400">450 Lexington Ave, Suite 1800<br />New York, NY 10017</p>
-              <p className="text-xs text-cyan-400 font-semibold mt-3">+1 (212) 555-0199</p>
-              <p className="text-xs text-slate-400 mt-1">concierge@wedesignsmiles.com</p>
+              <p className="text-xs text-slate-400">301-304 Crystal Plaza, R.C. Dutt Road<br />Alkapuri, Vadodara, Gujarat 390007</p>
+              <p className="text-xs text-cyan-400 font-semibold mt-3">+91 98250 12345</p>
+              <p className="text-xs text-slate-400 mt-1">care@wedesignsmiles.com</p>
               <div className="mt-4 pt-3 border-t border-slate-900">
                 <span className="text-[11px] text-emerald-400 flex items-center gap-1.5 font-medium">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
@@ -404,10 +405,10 @@ export default function DentalClinicHomePage() {
           </div>
 
           <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
-            <p>&copy; {new Date().getFullYear()} WE DESIGN SMILES Dental Clinic PLLC. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} WE DESIGN SMILES Dental Clinic LLP. All rights reserved.</p>
             <div className="flex gap-6">
               <a href="#about" className="hover:text-slate-400 transition-colors">Privacy Policy</a>
-              <a href="#about" className="hover:text-slate-400 transition-colors">HIPAA Compliance</a>
+              <a href="#about" className="hover:text-slate-400 transition-colors">DCI Guidelines</a>
               <a href="#about" className="hover:text-slate-400 transition-colors">Terms of Care</a>
             </div>
           </div>
